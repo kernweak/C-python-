@@ -36,6 +36,12 @@
     <ClInclude Include="ClientScoket.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="DlgChatMain.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgOne2One.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="即时通讯实验项目_客户端.cpp">
@@ -48,6 +54,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="ClientScoket.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgChatMain.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgOne2One.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

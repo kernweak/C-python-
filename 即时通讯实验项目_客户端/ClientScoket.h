@@ -1,5 +1,6 @@
 #pragma once
 #include<vector>
+using namespace std;
 #define BUFMSG 2048//一次接收消息的最大字节数
 //头部：通讯目的，包括匿名登录，聊天1v1聊天，注册，登录，添加好友，搜索好友，文件传输，查看聊天记录
 enum CHATPURPOSE {
@@ -69,16 +70,36 @@ typedef struct _CHATMSGRECORD {
 
 //更新在线用户列表
 typedef struct _CHATUPDATEUSER {
+	DWORD bAdd;//是加入还是退出
+	DWORD dwLen;//一次只接收一个用户名
+	CHAR buf[50];
+}CHATUPDATEUSER;
 
-};
+//发送内容
+typedef struct _CHATSEND {
+	CHATPURPOSE m_type;
+	union {
+		char buf[BUFMSG];
+		CHATANONYMOUS any;//匿名
+		CHATCHAT chat;//聊天
+		CHATONE2ONE o2o;//1v1
+		CHATREGISTER reg;//注册
+		CHATLOGIN log;//登录
+		CHATADDFRIEND adf; //添加好友
+		CHATSEARCHUSER seu;//搜索好友
+		CHATFILETRANS trs;//文件传输
+		CHATMSGRECORD rec;//聊天记录
+		CHATUPDATEUSER upd;//更新用户列表
+	}m_content;
+}CHATSEND;
 
 //查看聊天
 
-class CClientScoket
+class CClientSocket
 {
 public:
-	CClientScoket();
-	~CClientScoket();
+	CClientSocket();
+	~CClientSocket();
 	//初始化客户端套接字，并尝试连接服务器
 	bool ConnectServer(char* szIp, WORD port);
 	//负责创建线程用来接收服务器的信息
@@ -101,16 +122,16 @@ private:
 	//send function
 	void SendForAnonymous(char* bufSend, DWORD dwLen);
 	void SendForChat(char* bufSend, DWORD dwLen);
-	void SendForOne2One(char* vufSend, DWORD dwLen);
-	char* SendForRegister();
-	char* SendForLogin();
+	void SendForOne2One(char* bufSend, DWORD dwLen);
+	void SendForRegister(char* bufSend, DWORD dwLen);
+	void SendForLogin(char* bufSend, DWORD dwLen);
 	char* SendForAddFriend();
 	char* SendForSearchUser();
 	char* SendForGetMsgRecord();
 public:
 	//保存聊天记录使用
-		HANDLE m_hEvent = 0;
-vector<CHATMSGRECORD> m_vecMsgRecord;
+	HANDLE m_hEvent = 0;
+	vector<CHATMSGRECORD> m_vecMsgRecord;
 	//客户端套接字
 	SOCKET m_sClient = NULL;
 	//新用户加入或退出聊天室用到

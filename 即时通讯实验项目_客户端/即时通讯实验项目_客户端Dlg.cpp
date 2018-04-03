@@ -51,6 +51,8 @@ END_MESSAGE_MAP()
 
 C即时通讯实验项目_客户端Dlg::C即时通讯实验项目_客户端Dlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD___DIALOG, pParent)
+	, m_strName(_T(""))
+	, m_strPass(_T(""))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -58,12 +60,17 @@ C即时通讯实验项目_客户端Dlg::C即时通讯实验项目_客户端Dlg(CWnd* pParent /*=NULL*/
 void C即时通讯实验项目_客户端Dlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Text(pDX, IDC_EDIT1, m_strName);
+	DDX_Text(pDX, IDC_EDIT2, m_strPass);
 }
 
 BEGIN_MESSAGE_MAP(C即时通讯实验项目_客户端Dlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(IDC_BUTTON3, &C即时通讯实验项目_客户端Dlg::OnBtnProcAnony)
+	ON_BN_CLICKED(IDC_BUTTON2, &C即时通讯实验项目_客户端Dlg::OnBtnProcRegister)
+	ON_BN_CLICKED(IDC_BUTTON1, &C即时通讯实验项目_客户端Dlg::OnBtnProcLogin)
 END_MESSAGE_MAP()
 
 
@@ -154,3 +161,90 @@ HCURSOR C即时通讯实验项目_客户端Dlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+
+
+void C即时通讯实验项目_客户端Dlg::OnBtnProcAnony()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	if (!m_client.ConnectServer("127.0.0.1", 1234)) {
+		MessageBox(L"连接服务器失败！", L"Error", MB_OK | MB_ICONWARNING);
+		return;
+	}
+	//隐藏窗口
+	ShowWindow(SW_HIDE);
+	//显示匿名聊天窗口
+	CDlgChatMain dlgChat(&m_client);//调用自定义的构造函数
+	dlgChat.DoModal();
+	m_client.Close();
+	//退出
+	C即时通讯实验项目_客户端Dlg::OnClose();
+}
+
+
+
+void C即时通讯实验项目_客户端Dlg::OnBtnProcRegister()
+{	// TODO: 在此添加控件通知处理程序代码
+	//获取用户名和密码
+	UpdateData(TRUE);
+	if (m_strName.IsEmpty()||m_strPass.IsEmpty()) {
+		MessageBox(L"用户名密码都不能为空!");
+		return;
+	}
+	if (!m_client.ConnectServer("127.0.0.1", 1234)) {
+		MessageBox(L"连接服务器失败！", L"Error!", MB_OK | MB_ICONWARNING);
+		return;
+	}
+	//注册用户名密码
+	CString strSend = m_strName;
+	strSend += L":" + m_strPass;
+	CStringA str = CW2A(strSend.GetBuffer(), CP_THREAD_ACP);
+	m_client.Send(REGISTER, str.GetBuffer(), str.GetLength() + 1);
+	//等待注册结果
+	char *ret = m_client.Recv();
+	if (ret == nullptr) {
+		MessageBox(L"注册失败!");
+	}
+	else {
+		MessageBox(L"注册成功!");
+	}
+	//m_client.Close();
+	return;
+}
+
+
+void C即时通讯实验项目_客户端Dlg::OnBtnProcLogin()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	//获取用户名和密码
+	UpdateData(TRUE);
+	if (m_strName.IsEmpty() || m_strPass.IsEmpty()) {
+		MessageBox(L"用户名密码都不能为空!");
+		return;
+	}
+	if (!m_client.ConnectServer("127.0.0.1", 1234)) {
+		MessageBox(L"连接服务器失败！", L"Error!", MB_OK | MB_ICONWARNING);
+		return;
+	}
+	CString strSend = m_strName;
+	strSend += L":" + m_strPass;
+	CStringA str = CW2A(strSend.GetBuffer(), CP_THREAD_ACP);
+	m_client.Send(LOGIN, str.GetBuffer(), str.GetLength() + 1);
+	char *ret = m_client.Recv();
+	if (ret == nullptr) {
+		MessageBox(L"登录失败!");
+		m_client.Close();
+		return;
+	}
+	//登录成功
+	//设置当前登录用户名，否则显示的是个随机名称
+	CStringA strShowName = CW2A(m_strName.GetBuffer(), CP_THREAD_ACP);
+	strcpy_s(m_client.m_szName, strShowName.GetBuffer());
+	//隐藏登录窗口
+	ShowWindow(SW_HIDE);
+	//显示聊天窗口
+	CDlgChatMain dlgChat(&m_client);
+	dlgChat.m_bLogin = TRUE;//非匿名模式
+	dlgChat.DoModal();
+	m_client.Close();
+	C即时通讯实验项目_客户端Dlg::OnClose();
+}
