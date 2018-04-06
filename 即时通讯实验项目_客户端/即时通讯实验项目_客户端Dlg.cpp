@@ -248,3 +248,16 @@ void C即时通讯实验项目_客户端Dlg::OnBtnProcLogin()
 	m_client.Close();
 	C即时通讯实验项目_客户端Dlg::OnClose();
 }
+
+
+BOOL C即时通讯实验项目_客户端Dlg::PreTranslateMessage(MSG* pMsg)
+{
+	// TODO: 在此添加专用代码和/或调用基类
+	if (pMsg->message == WM_KEYDOWN) {
+		if (pMsg->wParam == VK_RETURN) {
+			OnBtnProcLogin();
+			return true;
+		}
+	}
+	return CDialogEx::PreTranslateMessage(pMsg);
+}

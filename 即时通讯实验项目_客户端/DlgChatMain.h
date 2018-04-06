@@ -8,10 +8,13 @@
 #include<iostream>  
 #include<map> 
 #include "afxcmn.h"
+#include"DlgSearch.h"
+#include <fstream>
+//#include"DlgRecord.h"
 using namespace std;
 #define WM_SOCKET WM_USER +1 
 // CDlgChatMain 对话框
-
+class  CDlgRecord;
 class CDlgChatMain : public CDialogEx
 {
 	DECLARE_DYNAMIC(CDlgChatMain)
@@ -44,4 +47,13 @@ public:
 	map<CString, CDialogEx*>m_map;
 	void ChatForOne2One(CHATONE2ONE &objOne2One);
 	afx_msg void OnNMDblclkList1(NMHDR *pNMHDR, LRESULT *pResult);
+	void InsertOrDeleteUser(CHATUPDATEUSER& useradd);
+	WORD m_dListNum;
+	DWORD m_dwNameIndex = 0;//鼠标点击在线用户列表时的索引值
+	afx_msg void OnNMRClickList1(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnAddFriend();//添加好友
+	afx_msg void OnSearch();
+	afx_msg void OnGetChatRecord();
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
+ 	CDlgRecord* m_pDlgRecord=nullptr;
 };

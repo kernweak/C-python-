@@ -39,4 +39,5 @@ public:
 	afx_msg void OnBtnProcAnony();
 	afx_msg void OnBtnProcRegister();
 	afx_msg void OnBtnProcLogin();
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };

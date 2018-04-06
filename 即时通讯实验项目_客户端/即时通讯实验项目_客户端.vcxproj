@@ -185,19 +185,27 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BigInteger.h" />
     <ClInclude Include="ClientScoket.h" />
     <ClInclude Include="DlgChatMain.h" />
     <ClInclude Include="DlgOne2One.h" />
+    <ClInclude Include="DlgRecord.h" />
+    <ClInclude Include="DlgSearch.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="RSA.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="即时通讯实验项目_客户端.h" />
     <ClInclude Include="即时通讯实验项目_客户端Dlg.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BigInteger.cpp" />
     <ClCompile Include="ClientScoket.cpp" />
     <ClCompile Include="DlgChatMain.cpp" />
     <ClCompile Include="DlgOne2One.cpp" />
+    <ClCompile Include="DlgRecord.cpp" />
+    <ClCompile Include="DlgSearch.cpp" />
+    <ClCompile Include="RSA.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -214,6 +222,8 @@
     <None Include="res\_.rc2" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\122.bmp" />
+    <Image Include="..\..\123.bmp" />
     <Image Include="res\即时通讯实验项目_客户端.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

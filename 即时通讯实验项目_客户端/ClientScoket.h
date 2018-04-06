@@ -1,7 +1,12 @@
 #pragma once
 #include<vector>
+#include<fstream>
 using namespace std;
+#define BUFMSG 2048//当次消息最大字节数
+#define BUFCHAT 1024//聊天内容最大长度
+#define BUFNAME 50 //名字最大字节数
 #define BUFMSG 2048//一次接收消息的最大字节数
+
 //头部：通讯目的，包括匿名登录，聊天1v1聊天，注册，登录，添加好友，搜索好友，文件传输，查看聊天记录
 enum CHATPURPOSE {
 	ANONYMOUS = 1,
@@ -58,7 +63,8 @@ typedef struct _CHATSEARCHUSER {
 
 //文件传输结构体
 typedef struct _CHATFILETRANS {
-
+	CHAR szName[BUFNAME];
+	CHAR szContent[BUFCHAT];
 }CHATFILETRANS;
 
 //查看聊天记录结构体
@@ -104,12 +110,15 @@ public:
 	bool ConnectServer(char* szIp, WORD port);
 	//负责创建线程用来接收服务器的信息
 	char* Recv();
-	bool Send(CHATPURPOSE purpose, char*bufSend, DWORD dwLen);
+	//BOOL Send(CHATPURPOSE purpose, char*bufSend, DWORD dwLen, SOCKET client = NULL);
+	bool Send(CHATPURPOSE purpose, char*bufSend, DWORD dwLen,SOCKET client = NULL);
 	bool Close();
 private:
 #define BUFNAME 50
 	char m_bufRecv[BUFMSG] = {};
+	fstream ReceiveFile;
 	//recv function
+	char* RecvForFiletrans();
 	char* RecvForAnonumous();
 	char* RecvForChat();
 	char* RecvForUpdataUserList();
@@ -125,9 +134,10 @@ private:
 	void SendForOne2One(char* bufSend, DWORD dwLen);
 	void SendForRegister(char* bufSend, DWORD dwLen);
 	void SendForLogin(char* bufSend, DWORD dwLen);
-	char* SendForAddFriend();
-	char* SendForSearchUser();
-	char* SendForGetMsgRecord();
+	void SendForAddFriend(char* bufSend, DWORD dwLen);
+	void SendForSearchUser(char* bufSend, DWORD dwLen);
+	void SendForGetMsgRecord(char* bufSend, DWORD dwLen);
+	void SendForFiletrans(char* bufSend, DWORD dwLen,SOCKET client);
 public:
 	//保存聊天记录使用
 	HANDLE m_hEvent = 0;

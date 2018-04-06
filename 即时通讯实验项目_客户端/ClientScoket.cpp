@@ -1,8 +1,10 @@
 #include "stdafx.h"
 #include "ClientScoket.h"
 #include <WS2tcpip.h>
+
 CClientSocket::CClientSocket()
 {
+	m_hEvent = CreateEvent(NULL, TRUE, TRUE, NULL);
 }
 
 
@@ -70,14 +72,15 @@ char * CClientSocket::Recv()
 		return RecvForRegister();
 	case LOGIN:
 		return RecvForLogin();
-//case ADDFRIEND:
-//	return RecvForAddFriend();
-//case SEARCHUSER:
-//	return RecvForSearchUser();
-//case FILETRANS:
-//	break;
-//case MSGRECORD:
-//	return RecvForGetMsgRecord();
+    case ADDFRIEND:
+    	return RecvForAddFriend();
+    case SEARCHUSER:
+    	return RecvForSearchUser();
+	case FILETRANS:
+		return RecvForFiletrans();
+	break;
+    case MSGRECORD:
+    	return RecvForGetMsgRecord();
 	case UPDATEUSER:
 		return RecvForUpdataUserList();
 	default:
@@ -86,7 +89,7 @@ char * CClientSocket::Recv()
 	return nullptr;
 }
 
-bool CClientSocket::Send(CHATPURPOSE purpose, char * bufSend, DWORD dwLen)
+bool CClientSocket::Send(CHATPURPOSE purpose, char * bufSend, DWORD dwLen, SOCKET client)
 {
 	switch (purpose)
 	{
@@ -105,17 +108,18 @@ bool CClientSocket::Send(CHATPURPOSE purpose, char * bufSend, DWORD dwLen)
 	case LOGIN:
 		SendForLogin(bufSend, dwLen);
 		break;
-//case ADDFRIEND:
-//	SendForAddFriend(bufSend, dwLen);
-//	break;
-//case SEARCHUSER:
-//	SendForSearchUser(bufSend, dwLen);
-//	break;
-//case FILETRANS:
-//	break;
-//case MSGRECORD:
-//	SendForGetMsgRecord(bufSend, dwLen);
-//	break;
+    case ADDFRIEND:
+    	SendForAddFriend(bufSend, dwLen);
+    	break;
+    case SEARCHUSER:
+    	SendForSearchUser(bufSend, dwLen);
+    	break;
+	case FILETRANS:
+		SendForFiletrans(bufSend, dwLen, client);
+		break;
+    case MSGRECORD:
+    	SendForGetMsgRecord(bufSend, dwLen);
+    	break;
 	case UPDATEUSER:
 		break;
 	default:
@@ -129,6 +133,29 @@ bool CClientSocket::Close()
 	WSACleanup();
 	closesocket(m_sClient);
 	return true;
+}
+
+char* CClientSocket::RecvForFiletrans()
+{
+	static long long i = 0;
+	char* buf = nullptr;
+	buf = m_pObjChatRecv->m_content.trs.szContent;
+	if (i == 0)
+	{
+		i++;
+		ReceiveFile.open(buf, ios::out | ios::binary);
+	}
+	else if (strcmp(buf, "over") == 0)
+	{
+		MessageBox(NULL, L"文件接收成功", L"提示", MB_OK);
+		i = 0;
+		ReceiveFile.close();
+	}
+	else
+	{
+		ReceiveFile.write(buf, 1024);
+	}
+	return nullptr;
 }
 
 char * CClientSocket::RecvForAnonumous()
@@ -184,6 +211,29 @@ char * CClientSocket::RecvForLogin()
 	}
 }
 
+char * CClientSocket::RecvForAddFriend()
+{
+	MessageBoxA(NULL, m_pObjChatRecv->m_content.adf.szName, "添加好友",MB_OK);
+	return nullptr;
+}
+
+char * CClientSocket::RecvForSearchUser()
+{
+	MessageBoxA(NULL, m_pObjChatRecv->m_content.seu.szName, "搜索用户", MB_OK);
+	return nullptr;
+}
+
+char * CClientSocket::RecvForGetMsgRecord()
+{
+	if (!strcmp(m_pObjChatRecv->m_content.rec.szFrom, "~~~end~~~")) {
+		SetEvent(m_hEvent);
+	}
+	else {
+		m_vecMsgRecord.push_back(m_pObjChatRecv->m_content.rec);
+	}
+	return nullptr;
+}
+
 void CClientSocket::SendForAnonymous(char * bufSend, DWORD dwLen)
 {
 	CHATSEND ct = { ANONYMOUS };
@@ -198,8 +248,8 @@ void CClientSocket::SendForChat(char * bufSend, DWORD dwLen)
 	CHATSEND ct = { CHAT };
 	//聊天 长度加姓名：内容
 	strcpy_s(ct.m_content.chat.buf, m_szName);
-	strcpy_s(ct.m_content.chat.buf, ":");
-	strcpy_s(ct.m_content.chat.buf, bufSend);
+	strcat_s(ct.m_content.chat.buf, ":");
+	strcat_s(ct.m_content.chat.buf, bufSend);
 	ct.m_content.chat.dwLen = strlen(ct.m_content.chat.buf) + 1;
 	//加密
 	for (int i = 0;i < ct.m_content.any.dwLen;i++) {
@@ -236,4 +286,41 @@ void CClientSocket::SendForLogin(char * bufSend, DWORD dwLen)
 	memcpy_s(ct.m_content.log.szName, pwd - bufSend, bufSend, pwd - bufSend);
 	memcpy_s(ct.m_content.log.szPwd, strlen(pwd), pwd, strlen(pwd));
 	send(m_sClient, (char*)&ct, sizeof(ct), NULL);
+}
+
+void CClientSocket::SendForAddFriend(char * bufSend, DWORD dwLen)
+{
+	CHATSEND ct = { ADDFRIEND };
+	char* frd = nullptr;
+	//构造内容 谁要添加：要添加谁
+	strtok_s(bufSend, ":", &frd);
+	memcpy_s(ct.m_content.adf.szName, frd - bufSend, bufSend, frd - bufSend);
+	memcpy_s(ct.m_content.adf.szFrd, strlen(frd), frd, strlen(frd));
+	send(m_sClient, (char*)&ct, sizeof(ct), NULL);
+}
+
+void CClientSocket::SendForSearchUser(char * bufSend, DWORD dwLen)
+{
+	CHATSEND ct = { SEARCHUSER };
+	memcpy_s(ct.m_content.seu.szName, dwLen, bufSend, dwLen);
+	send(m_sClient, (char*)&ct, sizeof(ct), NULL);
+}
+
+void CClientSocket::SendForGetMsgRecord(char * bufSend, DWORD dwLen)
+{
+	CHATSEND ct = { MSGRECORD };
+	//服务器保存有当前客户端的名称，所以查询所以记录只需要发送消息模型就行
+	send(m_sClient, (char*)&ct, sizeof(ct), NULL);
+}
+
+void CClientSocket::SendForFiletrans(char * bufSend, DWORD dwLen, SOCKET client)
+{
+	CHATSEND ct = { FILETRANS };
+	//姓名：内容
+	PCHAR nextToken = nullptr;
+	PCHAR szContext = strtok_s(bufSend, ":", &nextToken);
+	//SOCKET temp = m_sClient;
+	memcpy_s(ct.m_content.trs.szName, nextToken - bufSend, bufSend, nextToken - bufSend);
+	memcpy_s(ct.m_content.trs.szContent, strlen(nextToken), nextToken, strlen(nextToken));
+	send(client, (PCHAR)&ct, sizeof(ct), NULL);
 }

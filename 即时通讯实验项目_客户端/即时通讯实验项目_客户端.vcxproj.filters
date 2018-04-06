@@ -42,6 +42,12 @@
     <ClInclude Include="DlgOne2One.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="DlgSearch.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgRecord.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="即时通讯实验项目_客户端.cpp">
@@ -62,6 +68,12 @@
     <ClCompile Include="DlgOne2One.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="DlgSearch.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgRecord.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="即时通讯实验项目_客户端.rc">
@@ -75,6 +87,12 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\即时通讯实验项目_客户端.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="..\..\123.bmp">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="..\..\122.bmp">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>
